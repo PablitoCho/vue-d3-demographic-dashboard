@@ -29,3 +29,7 @@ coverage
 
 # article
 blog
+
+# notebook
+*.ipynb
+.ipynb_checkpoints
