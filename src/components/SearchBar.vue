@@ -1,85 +1,26 @@
 <template>
   <div class="navbar navbar-light bg-light">
     <div class="container-fluid d-flex justify-content-center">
-      <label class="mx-3">지역</label>
+      <label class="mx-2">지역</label>
       <div class="col-7 p-2">
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Country" />
-          <label class="form-check-label">전국</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Seoul" />
-          <label class="form-check-label">서울</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Daejeon" />
-          <label class="form-check-label">대전</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Daegu" />
-          <label class="form-check-label">대구</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Busan" />
-          <label class="form-check-label">부산</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Gwangju" />
-          <label class="form-check-label">광주</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Ulsan" />
-          <label class="form-check-label">울산</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Incheon" />
-          <label class="form-check-label">인천</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="세종" />
-          <label class="form-check-label">세종</label>
-        </div>
-        <br>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Gyeonggi-do" />
-          <label class="form-check-label">경기도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Chungcheongbuk-do" />
-          <label class="form-check-label">충청북도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Chungcheongnam-do" />
-          <label class="form-check-label">충청남도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Gyeongsangbuk-do" />
-          <label class="form-check-label">경상북도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Gyeongsangnam-do" />
-          <label class="form-check-label">경상남도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Jeollabuk-do" />
-          <label class="form-check-label">전라북도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Jeollanam-do" />
-          <label class="form-check-label">전라남도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Gangwon-do" />
-          <label class="form-check-label">강원도</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" value="Jeju" />
-          <label class="form-check-label">제주도</label>
+        <div v-for="region in regions" class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            @change="
+              $emit('checkRegions', region.value, ($event.target as HTMLInputElement).checked)
+            "
+          />
+          {{ region.label }}
         </div>
       </div>
       <div class="col-2 p-2">
         <div class="form-floating">
-          <select class="form-select" aria-label="Floating label select example">
+          <select
+            class="form-select"
+            aria-label="Floating label select"
+            @change="$emit('selectBarChartVariable', ($event.target as HTMLSelectElement).value)"
+          >
             <option selected>Select Variable</option>
             <option value="Birth">출생아수</option>
             <option value="Death">사망자수</option>
@@ -91,7 +32,11 @@
       </div>
       <div class="col-2 p-2">
         <div class="form-floating">
-          <select class="form-select" aria-label="Floating label select example">
+          <select
+            class="form-select"
+            aria-label="Floating label select"
+            @change="$emit('selectPieChartVariable', ($event.target as HTMLSelectElement).value)"
+          >
             <option selected>Select Variable</option>
             <option value="Birth">출생아수</option>
             <option value="Death">사망자수</option>
@@ -107,7 +52,28 @@
 </template>
 
 <script setup lang="ts">
-defineEmits(['searchData'])
+defineEmits(['searchData', 'checkRegions', 'selectBarChartVariable', 'selectPieChartVariable'])
+
+const regions = [
+  { label: '전국', value: 'Country' },
+  { label: '서울', value: 'Seoul' },
+  { label: '대전', value: 'Daejeon' },
+  { label: '대구', value: 'Daegu' },
+  { label: '부산', value: 'Busan' },
+  { label: '광주', value: 'Gwangju' },
+  { label: '울산', value: 'Ulsan' },
+  { label: '인천', value: 'Incheon' },
+  { label: '세종', value: 'Sejong' },
+  { label: '경기도', value: 'Gyeonggi-do' },
+  { label: '충청북도', value: 'Chungcheongbuk-do' },
+  { label: '충청남도', value: 'Chungcheongnam-do' },
+  { label: '경상북도', value: 'Gyeongsangbuk-do' },
+  { label: '경상남도', value: 'Gyeongsangnam-do' },
+  { label: '전라북도', value: 'Jeollabuk-do' },
+  { label: '전라남도', value: 'Jeollanam-do' },
+  { label: '강원도', value: 'Gangwon-do' },
+  { label: '제주도', value: 'Jeju' }
+]
 </script>
 
 <style scoped>

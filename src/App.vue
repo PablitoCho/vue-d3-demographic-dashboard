@@ -1,13 +1,16 @@
 <template>
   <main>
-    <SearchBar 
+    <SearchBar
       @search-data="fetchDemographicData"
+      @check-regions="(region, checked) => updateRegions(region, checked)"
+      @select-bar-chart-variable="(variable) => (selectedBarChartVariable = variable)"
+      @select-pie-chart-variable="(variable) => (selectedPieChartVariable = variable)"
     />
-    <LineChart />
+    <LineChart :dataset="lineChartData" />
     <div class="container-fluid">
       <div class="row">
-        <BarChart />
-        <PieChart />
+        <BarChart :dataset="barChartData" />
+        <PieChart :dataset="pieChartData" />
       </div>
     </div>
   </main>
@@ -18,21 +21,41 @@ import SearchBar from '@/components/SearchBar.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
-import { getBirthRates, getDemographicValues } from '@/services'
+import {
+  getBirthRates,
+  getDemographicValues,
+  type BirthRate,
+  type DemographicValue
+} from '@/services'
+import { ref, type Ref } from 'vue'
 
+const selectedRegions: Ref<string[]> = ref([])
+const selectedBarChartVariable: Ref<string> = ref('')
+const selectedPieChartVariable: Ref<string> = ref('')
+
+const lineChartData: Ref<BirthRate[][]> = ref([])
+const barChartData: Ref<DemographicValue[]> = ref([])
+const pieChartData: Ref<DemographicValue[]> = ref([])
 
 const fetchDemographicData = () => {
-  const result = getBirthRates(['Seoul', 'Busan', 'Jeju']);
-  result
-    .then(data => console.log(data))
-    .catch(err => console.error(err))
+  getBirthRates(selectedRegions.value)
+    .then((data) => (lineChartData.value = data))
+    .catch((err) => console.error(err))
 
-  const result2 = getDemographicValues('Death');
-  result2
-    .then(data => console.log(data))
-    .catch(err => console.error(err))
+  getDemographicValues(selectedBarChartVariable.value)
+    .then((data) => (barChartData.value = data))
+    .catch((err) => console.error(err))
+
+  getDemographicValues(selectedPieChartVariable.value)
+    .then((data) => (pieChartData.value = data))
+    .catch((err) => console.error(err))
 }
 
+const updateRegions = (region: string, checked: boolean) => {
+  if (checked) selectedRegions.value.push(region)
+  else {
+    const index = selectedRegions.value.indexOf(region)
+    if (index !== -1) selectedRegions.value.splice(index, 1)
+  }
+}
 </script>
-
-<style scoped></style>
