@@ -38,17 +38,24 @@ const barChartData: Ref<DemographicValue[]> = ref([])
 const pieChartData: Ref<DemographicValue[]> = ref([])
 
 const fetchDemographicData = () => {
-  getBirthRates(selectedRegions.value)
-    .then((data) => (lineChartData.value = data))
-    .catch((err) => console.error(err))
+  if(selectedRegions.value) {
+    getBirthRates(selectedRegions.value)
+      .then((data) => (lineChartData.value = data))
+      .catch((err) => console.error(err))
+  }
 
-  getDemographicValues(selectedBarChartVariable.value)
-    .then((data) => (barChartData.value = data))
-    .catch((err) => console.error(err))
+  if(selectedBarChartVariable.value) {
+    getDemographicValues(selectedBarChartVariable.value)
+      .then((data) => (barChartData.value = data))
+      .catch((err) => console.error(err))
+  }
 
-  getDemographicValues(selectedPieChartVariable.value)
-    .then((data) => (pieChartData.value = data))
-    .catch((err) => console.error(err))
+  if(selectedPieChartVariable.value) {
+    getDemographicValues(selectedPieChartVariable.value)
+      .then((data) => (pieChartData.value = data))
+      .catch((err) => console.error(err))
+  }
+
 }
 
 const updateRegions = (region: string, checked: boolean) => {

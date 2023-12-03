@@ -6,7 +6,6 @@
 
 <script setup lang="ts">
 defineProps({
-  dataset:Array
+  dataset: Array
 })
-
 </script>
