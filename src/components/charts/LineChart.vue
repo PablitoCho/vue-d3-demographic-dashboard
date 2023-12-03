@@ -30,11 +30,7 @@ watch(
     // clear svg
     svg = d3.select('svg')
     svg.selectAll("*").remove()
-    props.dataset!.map(data => drawLine(data))
-  }
-)
 
-const drawLine = (chartData:BirthRate[]) => {
     // preprocess props data
     maxRate = props.dataset?.map(
       arr => Math.max(...arr.map(o => o.birth_rate))
@@ -42,7 +38,7 @@ const drawLine = (chartData:BirthRate[]) => {
 
     // scales
     const x = d3.scaleUtc()
-      .domain(d3.extent(chartData, d => new Date(d.date)))
+      .domain(d3.extent(props.dataset![0], d => new Date(d.date)))
       .range([margin.left, width - margin.right])
 
     const y = d3.scaleLinear()
@@ -74,6 +70,11 @@ const drawLine = (chartData:BirthRate[]) => {
             .attr("text-anchor", "start")
             .text("Birth Rate(%)")
         )
+    props.dataset!.map(data => drawLine(data, x, y))
+  }
+)
+
+const drawLine = (chartData:BirthRate[], x:d3.ScaleTime<number, number, never>, y:d3.ScaleLinear<number, number, never>) => {
 
     // Declare the line generator.
     const line = d3.line()
