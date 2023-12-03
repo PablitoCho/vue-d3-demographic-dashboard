@@ -21,23 +21,24 @@ const width = 1500
 const height = 300
 const margin = {top: 10, right: 20, bottom: 30, left: 20}
 
-let chartData = [] as BirthRate[]
-let maxRate
+let svg:d3.Selection<SVGElement, {}, HTMLElement, any>, maxRate:number|undefined
 
 // watch dataset
 watch(
   () => props.dataset,
   () => {
-    const svg = d3.select('svg')
-    svg.selectAll("*").remove() // reset svg
-    
+    // clear svg
+    svg = d3.select('svg')
+    svg.selectAll("*").remove()
+    props.dataset!.map(data => drawLine(data))
+  }
+)
+
+const drawLine = (chartData:BirthRate[]) => {
     // preprocess props data
     maxRate = props.dataset?.map(
       arr => Math.max(...arr.map(o => o.birth_rate))
     ).reduce((prev, current) => (prev && prev > current) ? prev : current)
-    console.log(`max Rate ${maxRate}`)
-
-    chartData = props.dataset![0] // temp
 
     // scales
     const x = d3.scaleUtc()
@@ -45,7 +46,7 @@ watch(
       .range([margin.left, width - margin.right])
 
     const y = d3.scaleLinear()
-      .domain([0, maxRate + 2.0])
+      .domain([0, maxRate! + 2.0])
       .range([height - margin.bottom, margin.top])
 
     // select svg container
@@ -77,7 +78,7 @@ watch(
     // Declare the line generator.
     const line = d3.line()
         .x(d => x(new Date(d.date)))
-        .y(d => y(d.birth_rate))
+        .y(d => y(d.birth_rate ? d.birth_rate : 0)) // 세종의 경우 2012년까지 birth rate가 null
 
     // Append a path for the line.
     svg.append("path")
@@ -85,9 +86,6 @@ watch(
         .attr("stroke", "steelblue")
         .attr("stroke-width", 1.5)
         .attr("d", line(chartData))
-
-  }
-)
-
+}
 
 </script>
