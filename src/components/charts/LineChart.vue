@@ -22,11 +22,19 @@ const height = 300
 const margin = {top: 10, right: 20, bottom: 30, left: 20}
 
 let svg:d3.Selection<SVGElement, {}, HTMLElement, any>, maxRate:number|undefined
-
+let x:d3.ScaleTime<number, number, never>, y:d3.ScaleLinear<number, number, never>
 // watch dataset
 watch(
   () => props.dataset,
   () => {
+    // reset svg and draw axes
+    drawAxes()
+    // draw lines for selected regions
+    props.dataset!.map(data => drawLine(data, x, y))
+  }
+)
+
+const drawAxes = () => {
     // clear svg
     svg = d3.select('svg')
     svg.selectAll("*").remove()
@@ -37,11 +45,11 @@ watch(
     ).reduce((prev, current) => (prev && prev > current) ? prev : current)
 
     // scales
-    const x = d3.scaleUtc()
+    x = d3.scaleUtc()
       .domain(d3.extent(props.dataset![0], d => new Date(d.date)))
       .range([margin.left, width - margin.right])
 
-    const y = d3.scaleLinear()
+    y = d3.scaleLinear()
       .domain([0, maxRate! + 2.0])
       .range([height - margin.bottom, margin.top])
 
@@ -70,9 +78,7 @@ watch(
             .attr("text-anchor", "start")
             .text("Birth Rate(%)")
         )
-    props.dataset!.map(data => drawLine(data, x, y))
-  }
-)
+}
 
 const drawLine = (chartData:BirthRate[], x:d3.ScaleTime<number, number, never>, y:d3.ScaleLinear<number, number, never>) => {
 
