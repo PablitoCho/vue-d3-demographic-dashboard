@@ -29,7 +29,9 @@ coverage
 
 # article
 blog
+sample.html
 
 # notebook
 *.ipynb
 .ipynb_checkpoints
+.gitignore
