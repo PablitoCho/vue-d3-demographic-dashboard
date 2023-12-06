@@ -17,16 +17,22 @@ const props = defineProps({
   dataset: Array as PropType<BirthRate[][]>
 })
 // dimensions
-const width = 1500
-const height = 300
+const width = 1700
+const height = 350
 const margin = { top: 10, right: 20, bottom: 30, left: 20 }
 
+let colorScale: d3.ScaleOrdinal<string, string, never>
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>, maxRate: number | undefined
 let x: d3.ScaleTime<number, number, never>, y: d3.ScaleLinear<number, number, never>
+
 // watch dataset
 watch(
   () => props.dataset,
   () => {
+    // color for categorical variables
+    colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+                    .domain(props.dataset!.map((data) => data[0].region))
+
     // reset svg and draw axes
     drawAxes()
     // draw lines for selected regions
@@ -109,7 +115,8 @@ const drawLine = (
   svg
     .append('path')
     .attr('fill', 'none')
-    .attr('stroke', 'steelblue')
+    // .attr('stroke', 'steelblue')
+    .attr('stroke', colorScale(chartData[0].region))
     .attr('stroke-width', 1.5)
     .attr('d', line(chartData))
 }

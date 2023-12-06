@@ -29,7 +29,7 @@ coverage
 
 # article
 blog
-sample.html
+sample*.html
 
 # notebook
 *.ipynb
