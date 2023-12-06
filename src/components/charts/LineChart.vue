@@ -37,6 +37,112 @@ watch(
     drawAxes()
     // draw lines for selected regions
     props.dataset!.map((data) => drawLine(data, x, y))
+
+    // mouse event
+    // circles
+    const circles = colorScale.domain().map(
+      (name) => ({
+        name,
+        values: props.dataset!
+                    .filter(x => x[0].region === name)[0]
+                    .map((d:BirthRate) => ({
+                      date: d.date,
+                      rate: d.birth_rate
+                    }))
+      })
+    )
+
+    const mouseG = svg.append("g")
+      .attr("class", "mouse-over-effects")
+    
+    mouseG.append("path")
+      .attr("class", "mouse-line")
+      .style("stroke", "black")
+      .style("stroke-width", "1px")
+      .style("opacity", "0")
+    
+    const lines = document.getElementsByClassName('line')
+
+    const mousePerLine = mouseG.selectAll('.mouse-per-line')
+                                .data(circles)
+                                .enter()
+                                .append("g")
+                                .attr("class", "mouse-per-line")
+
+    mousePerLine.append("circle")
+      .attr("r", 7)
+      .style("stroke", function(d) {
+        return colorScale(d.name);
+      })
+      .style("fill", "none")
+      .style("stroke-width", "1px")
+      .style("opacity", "0")
+
+    mousePerLine.append("text")
+      .attr("transform", "translate(10,3)")
+
+    mouseG.append('svg:rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function() { // on mouse out hide line, circles and text
+        d3.select(".mouse-line")
+          .style("opacity", "0")
+        d3.selectAll(".mouse-per-line circle")
+          .style("opacity", "0")
+        d3.selectAll(".mouse-per-line text")
+          .style("opacity", "0")
+      })
+      .on('mouseover', function() { // on mouse in show line, circles and text
+        d3.select(".mouse-line")
+          .style("opacity", "1")
+        d3.selectAll(".mouse-per-line circle")
+          .style("opacity", "1")
+        d3.selectAll(".mouse-per-line text")
+          .style("opacity", "1")
+      })
+      .on('mousemove', function() { // mouse moving over canvas
+        const mouse = d3.pointer(event)
+        d3.select(".mouse-line")
+          .attr("d", function() {
+            let d = "M" + mouse[0] + "," + height
+            d += " " + mouse[0] + "," + 0
+            return d
+          })
+          d3.selectAll(".mouse-per-line")
+          .attr("transform", function(d, i) {
+            // Object.keys(d).map(key => console.log(key, d[key]))
+            // console.log(width/mouse[0])
+            const xDate = x.invert(mouse[0])
+            const bisect = d3.bisector((d) => (d.date)).right
+            const idx = bisect(d.values, xDate)
+            
+            let beginning:number|null = 0
+            let end = (lines[i] as SVGGeometryElement).getTotalLength()
+            let target = null
+            let pos:DOMPoint
+
+            while (true){
+              target = Math.floor((beginning + end) / 2)
+              pos = (lines[i] as SVGGeometryElement).getPointAtLength(target)
+              if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+                  break;
+              }
+              if (pos.x > mouse[0])
+                end = target
+              else if (pos.x < mouse[0])
+                beginning = target
+              else
+                break //position found
+            }
+            
+            d3.select(this).select('text')
+              .text(d.name + y.invert(pos.y).toFixed(2))
+              
+            return "translate(" + mouse[0] + "," + pos.y +")"
+          })
+      })
   }
 )
 
@@ -53,6 +159,7 @@ const drawAxes = () => {
   // scales
   x = d3
     .scaleUtc()
+    // @ts-ignore
     .domain(d3.extent(props.dataset![0], (d) => new Date(d.date)))
     .range([margin.left, width - margin.right])
 
@@ -115,6 +222,7 @@ const drawLine = (
   svg
     .append('path')
     .attr('fill', 'none')
+    .attr("class", "line") // for mouse event
     // .attr('stroke', 'steelblue')
     .attr('stroke', colorScale(chartData[0].region))
     .attr('stroke-width', 1.5)
