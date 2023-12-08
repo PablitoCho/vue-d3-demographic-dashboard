@@ -47,30 +47,9 @@ watch(
     // draw lines for selected regions
     props.dataset!.map((data) => drawLine(data, x, y))
     
-    // legend
-    const legend = svg.append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(1000, 0)`)
-    
-    legend.selectAll("rect")
-      .data(props.dataset!.map((data) => data[0].region))
-      .enter()
-      .append("rect")
-        .attr("x", 500)
-        .attr("y", (d, i) => i * 20) // Space out the legend items
-        .attr("width", 10)
-        .attr("height", 10)
-        .style("fill", d => colorScale(d))
+    // add legend
+    addLegend(1500)
 
-    legend.selectAll("text")
-      .data(props.dataset!.map((data) => data[0].region))
-      .enter().append("text")
-        .attr("x", 515) // Position text next to the rectangle
-        .attr("y", (d, i) => i * 20 + 9) // Align text with rectangles
-      .text(d => d)
-      .style("font-size", "12px")
-        .attr("text-anchor", "start")
-    
     // mouse event
     addMouseEvent()
   }
@@ -159,6 +138,32 @@ const drawLine = (
     .attr('d', line(chartData))
 }
 
+const addLegend = (legendX:number=1000) => {
+    // legend
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${legendX}, 0)`)
+    
+    legend.selectAll("rect")
+      .data(props.dataset!.map((data) => data[0].region))
+      .enter()
+      .append("rect")
+        .attr("x", 0)
+        .attr("y", (d, i) => i * 20) 
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", d => colorScale(d))
+
+    legend.selectAll("text")
+      .data(props.dataset!.map((data) => data[0].region))
+      .enter().append("text")
+        .attr("x", 15) // Position text next to the rectangle
+        .attr("y", (d, i) => i * 20 + 9) // Align text with rectangles
+      .text(d => d)
+      .style("font-size", "12px")
+        .attr("text-anchor", "start")
+}
+
 const addMouseEvent = () => {
     // mouse event
     // circles
@@ -193,9 +198,7 @@ const addMouseEvent = () => {
 
     mousePerLine.append("circle")
       .attr("r", 7)
-      .style("stroke", function(d) {
-        return colorScale(d.name);
-      })
+      .style("stroke", (d) => (colorScale(d.name)))
       .style("fill", "none")
       .style("stroke-width", "1px")
       .style("opacity", "0")
