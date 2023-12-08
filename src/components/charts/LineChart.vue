@@ -25,6 +25,15 @@ let colorScale: d3.ScaleOrdinal<string, string, never>
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>, maxRate: number | undefined
 let x: d3.ScaleTime<number, number, never>, y: d3.ScaleLinear<number, number, never>
 
+const formatDate = (date:string) => {
+    const d = new Date(date)
+    let month = '' + (d.getMonth() + 1)
+    let year = d.getFullYear()
+    if (month.length < 2) 
+        month = '0' + month;
+    return [year, month].join('-');
+}
+
 // watch dataset
 watch(
   () => props.dataset,
@@ -37,7 +46,96 @@ watch(
     drawAxes()
     // draw lines for selected regions
     props.dataset!.map((data) => drawLine(data, x, y))
+    
+    // mouse event
+    addMouseEvent()
+  }
+)
 
+const drawAxes = () => {
+  // clear svg
+  svg = d3.select('svg')
+  svg.selectAll('*').remove()
+
+  // preprocess props data
+  maxRate = props.dataset
+    ?.map((arr) => Math.max(...arr.map((o) => o.birth_rate)))
+    .reduce((prev, current) => (prev && prev > current ? prev : current))
+
+  // scales
+  x = d3
+    .scaleUtc()
+    // @ts-ignore
+    .domain(d3.extent(props.dataset![0], (d) => new Date(d.date)))
+    .range([margin.left, width - margin.right])
+
+  y = d3
+    .scaleLinear()
+    .domain([0, maxRate! + 2.0])
+    .range([height - margin.bottom, margin.top])
+
+  // select svg container
+  svg.attr('viewBox', [0, 0, width, height])
+
+  // append axes
+  // Add the x-axis.
+  svg
+    .append('g')
+    .attr('transform', `translate(0,${height - margin.bottom})`)
+    .call(
+      d3
+        .axisBottom(x)
+        .ticks(width / 80)
+        .tickSizeOuter(0)
+    )
+
+  // Add the y-axis, remove the domain line, add grid lines and a label.
+  svg
+    .append('g')
+    .attr('transform', `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y).ticks(height / 40))
+    .call((g) => g.select('.domain').remove())
+    .call((g) =>
+      g
+        .selectAll('.tick line')
+        .clone()
+        .attr('x2', width - margin.left - margin.right)
+        .attr('stroke-opacity', 0.1)
+    )
+    .call((g) =>
+      g
+        .append('text')
+        .attr('x', -margin.left)
+        .attr('y', 10)
+        .attr('fill', 'currentColor')
+        .attr('text-anchor', 'start')
+        .text('Birth Rate(%)')
+    )
+}
+
+const drawLine = (
+  chartData: BirthRate[],
+  x: d3.ScaleTime<number, number, never>,
+  y: d3.ScaleLinear<number, number, never>
+) => {
+  // Declare the line generator.
+  const line = d3
+    .line()
+    .x((d) => x(new Date(d.date)))
+    .y((d) => y(d.birth_rate ? d.birth_rate : 0)) // 세종의 경우 2012년까지 birth rate가 null
+
+  // Append a path for the line.
+  svg
+    .append('path')
+    .attr('fill', 'none')
+    .attr("class", "line") // for mouse event
+    // .attr('stroke', 'steelblue')
+    .attr('stroke', colorScale(chartData[0].region))
+    .attr('stroke-width', 1.5)
+    .attr('d', line(chartData))
+}
+
+const addMouseEvent = () => {
     // mouse event
     // circles
     const circles = colorScale.domain().map(
@@ -137,95 +235,11 @@ watch(
                 break //position found
             }
             
+            // tooltip format
             d3.select(this).select('text')
-              .text(d.name + y.invert(pos.y).toFixed(2))
-              
+              .text(`${formatDate(xDate)}, ${d.name}, ${ y.invert(pos.y).toFixed(2)}`)//formatDate(xDate) + d.name + y.invert(pos.y).toFixed(2)
             return "translate(" + mouse[0] + "," + pos.y +")"
           })
       })
-  }
-)
-
-const drawAxes = () => {
-  // clear svg
-  svg = d3.select('svg')
-  svg.selectAll('*').remove()
-
-  // preprocess props data
-  maxRate = props.dataset
-    ?.map((arr) => Math.max(...arr.map((o) => o.birth_rate)))
-    .reduce((prev, current) => (prev && prev > current ? prev : current))
-
-  // scales
-  x = d3
-    .scaleUtc()
-    // @ts-ignore
-    .domain(d3.extent(props.dataset![0], (d) => new Date(d.date)))
-    .range([margin.left, width - margin.right])
-
-  y = d3
-    .scaleLinear()
-    .domain([0, maxRate! + 2.0])
-    .range([height - margin.bottom, margin.top])
-
-  // select svg container
-  svg.attr('viewBox', [0, 0, width, height])
-
-  // append axes
-  // Add the x-axis.
-  svg
-    .append('g')
-    .attr('transform', `translate(0,${height - margin.bottom})`)
-    .call(
-      d3
-        .axisBottom(x)
-        .ticks(width / 80)
-        .tickSizeOuter(0)
-    )
-
-  // Add the y-axis, remove the domain line, add grid lines and a label.
-  svg
-    .append('g')
-    .attr('transform', `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).ticks(height / 40))
-    .call((g) => g.select('.domain').remove())
-    .call((g) =>
-      g
-        .selectAll('.tick line')
-        .clone()
-        .attr('x2', width - margin.left - margin.right)
-        .attr('stroke-opacity', 0.1)
-    )
-    .call((g) =>
-      g
-        .append('text')
-        .attr('x', -margin.left)
-        .attr('y', 10)
-        .attr('fill', 'currentColor')
-        .attr('text-anchor', 'start')
-        .text('Birth Rate(%)')
-    )
-}
-
-const drawLine = (
-  chartData: BirthRate[],
-  x: d3.ScaleTime<number, number, never>,
-  y: d3.ScaleLinear<number, number, never>
-) => {
-  // Declare the line generator.
-  const line = d3
-    .line()
-    .x((d) => x(new Date(d.date)))
-    .y((d) => y(d.birth_rate ? d.birth_rate : 0)) // 세종의 경우 2012년까지 birth rate가 null
-
-  // Append a path for the line.
-  svg
-    .append('path')
-    .attr('fill', 'none')
-    .attr("class", "line") // for mouse event
-    // .attr('stroke', 'steelblue')
-    .attr('stroke', colorScale(chartData[0].region))
-    .attr('stroke-width', 1.5)
-    .attr('d', line(chartData))
 }
 </script>
