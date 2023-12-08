@@ -47,6 +47,30 @@ watch(
     // draw lines for selected regions
     props.dataset!.map((data) => drawLine(data, x, y))
     
+    // legend
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(1000, 0)`)
+    
+    legend.selectAll("rect")
+      .data(props.dataset!.map((data) => data[0].region))
+      .enter()
+      .append("rect")
+        .attr("x", 500)
+        .attr("y", (d, i) => i * 20) // Space out the legend items
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", d => colorScale(d))
+
+    legend.selectAll("text")
+      .data(props.dataset!.map((data) => data[0].region))
+      .enter().append("text")
+        .attr("x", 515) // Position text next to the rectangle
+        .attr("y", (d, i) => i * 20 + 9) // Align text with rectangles
+      .text(d => d)
+      .style("font-size", "12px")
+        .attr("text-anchor", "start")
+    
     // mouse event
     addMouseEvent()
   }
