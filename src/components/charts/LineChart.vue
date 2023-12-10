@@ -3,15 +3,14 @@
     <!-- <div class="row"> -->
     <!-- <div class="alert alert-primary" style="height: 20rem">Line Chart Area</div> -->
     <!-- </div> -->
-    <svg :width="width" :height="height"></svg>
+    <svg id="line-chart" :width="width" :height="height"></svg>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { BirthRate } from '@/services'
 import * as d3 from 'd3'
-import { watch } from 'vue'
-import { type PropType } from 'vue'
+import { watch, type PropType } from 'vue'
 
 const props = defineProps({
   dataset: Array as PropType<BirthRate[][]>
@@ -25,13 +24,12 @@ let colorScale: d3.ScaleOrdinal<string, string, never>
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>, maxRate: number | undefined
 let x: d3.ScaleTime<number, number, never>, y: d3.ScaleLinear<number, number, never>
 
-const formatDate = (date:string) => {
-    const d = new Date(date)
-    let month = '' + (d.getMonth() + 1)
-    let year = d.getFullYear()
-    if (month.length < 2) 
-        month = '0' + month;
-    return [year, month].join('-');
+const formatDate = (date: string) => {
+  const d = new Date(date)
+  let month = '' + (d.getMonth() + 1)
+  let year = d.getFullYear()
+  if (month.length < 2) month = '0' + month
+  return [year, month].join('-')
 }
 
 // watch dataset
@@ -39,14 +37,15 @@ watch(
   () => props.dataset,
   () => {
     // color for categorical variables
-    colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-                    .domain(props.dataset!.map((data) => data[0].region))
+    colorScale = d3
+      .scaleOrdinal(d3.schemeCategory10)
+      .domain(props.dataset!.map((data) => data[0].region))
 
     // reset svg and draw axes
     drawAxes()
     // draw lines for selected regions
     props.dataset!.map((data) => drawLine(data, x, y))
-    
+
     // add legend
     addLegend(1500)
 
@@ -57,7 +56,7 @@ watch(
 
 const drawAxes = () => {
   // clear svg
-  svg = d3.select('svg')
+  svg = d3.select('#line-chart')
   svg.selectAll('*').remove()
 
   // preprocess props data
@@ -131,142 +130,139 @@ const drawLine = (
   svg
     .append('path')
     .attr('fill', 'none')
-    .attr("class", "line") // for mouse event
+    .attr('class', 'line') // for mouse event
     // .attr('stroke', 'steelblue')
     .attr('stroke', colorScale(chartData[0].region))
     .attr('stroke-width', 1.5)
     .attr('d', line(chartData))
 }
 
-const addLegend = (legendX:number=1000) => {
-    // legend
-    const legend = svg.append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(${legendX}, 0)`)
-    
-    legend.selectAll("rect")
-      .data(props.dataset!.map((data) => data[0].region))
-      .enter()
-      .append("rect")
-        .attr("x", 0)
-        .attr("y", (d, i) => i * 20) 
-        .attr("width", 10)
-        .attr("height", 10)
-        .style("fill", d => colorScale(d))
+const addLegend = (legendX: number = 1000) => {
+  // legend
+  const legend = svg
+    .append('g')
+    .attr('class', 'legend')
+    .attr('transform', `translate(${legendX}, 0)`)
 
-    legend.selectAll("text")
-      .data(props.dataset!.map((data) => data[0].region))
-      .enter().append("text")
-        .attr("x", 15) // Position text next to the rectangle
-        .attr("y", (d, i) => i * 20 + 9) // Align text with rectangles
-      .text(d => d)
-      .style("font-size", "12px")
-        .attr("text-anchor", "start")
+  legend
+    .selectAll('rect')
+    .data(props.dataset!.map((data) => data[0].region))
+    .enter()
+    .append('rect')
+    .attr('x', 0)
+    .attr('y', (d, i) => i * 20)
+    .attr('width', 10)
+    .attr('height', 10)
+    .style('fill', (d) => colorScale(d))
+
+  legend
+    .selectAll('text')
+    .data(props.dataset!.map((data) => data[0].region))
+    .enter()
+    .append('text')
+    .attr('x', 15) // Position text next to the rectangle
+    .attr('y', (d, i) => i * 20 + 9) // Align text with rectangles
+    .text((d) => d)
+    .style('font-size', '12px')
+    .attr('text-anchor', 'start')
 }
 
 const addMouseEvent = () => {
-    // mouse event
-    // circles
-    const circles = colorScale.domain().map(
-      (name) => ({
-        name,
-        values: props.dataset!
-                    .filter(x => x[0].region === name)[0]
-                    .map((d:BirthRate) => ({
-                      date: d.date,
-                      rate: d.birth_rate
-                    }))
+  // mouse event
+  // circles
+  const circles = colorScale.domain().map((name) => ({
+    name,
+    values: props
+      .dataset!.filter((x) => x[0].region === name)[0]
+      .map((d: BirthRate) => ({
+        date: d.date,
+        rate: d.birth_rate
+      }))
+  }))
+
+  const mouseG = svg.append('g').attr('class', 'mouse-over-effects')
+
+  mouseG
+    .append('path')
+    .attr('class', 'mouse-line')
+    .style('stroke', 'black')
+    .style('stroke-width', '1px')
+    .style('opacity', '0')
+
+  const lines = document.getElementsByClassName('line')
+
+  const mousePerLine = mouseG
+    .selectAll('.mouse-per-line')
+    .data(circles)
+    .enter()
+    .append('g')
+    .attr('class', 'mouse-per-line')
+
+  mousePerLine
+    .append('circle')
+    .attr('r', 7)
+    .style('stroke', (d) => colorScale(d.name))
+    .style('fill', 'none')
+    .style('stroke-width', '1px')
+    .style('opacity', '0')
+
+  mousePerLine.append('text').attr('transform', 'translate(10,3)')
+
+  mouseG
+    .append('svg:rect')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('fill', 'none')
+    .attr('pointer-events', 'all')
+    .on('mouseout', function () {
+      // on mouse out hide line, circles and text
+      d3.select('.mouse-line').style('opacity', '0')
+      d3.selectAll('.mouse-per-line circle').style('opacity', '0')
+      d3.selectAll('.mouse-per-line text').style('opacity', '0')
+    })
+    .on('mouseover', function () {
+      // on mouse in show line, circles and text
+      d3.select('.mouse-line').style('opacity', '1')
+      d3.selectAll('.mouse-per-line circle').style('opacity', '1')
+      d3.selectAll('.mouse-per-line text').style('opacity', '1')
+    })
+    .on('mousemove', function () {
+      // mouse moving over canvas
+      const mouse = d3.pointer(event)
+      d3.select('.mouse-line').attr('d', function () {
+        let d = 'M' + mouse[0] + ',' + height
+        d += ' ' + mouse[0] + ',' + 0
+        return d
       })
-    )
+      d3.selectAll('.mouse-per-line').attr('transform', function (d, i) {
+        // Object.keys(d).map(key => console.log(key, d[key]))
+        // console.log(width/mouse[0])
+        const xDate = x.invert(mouse[0])
+        const bisect = d3.bisector((d) => d.date).right
+        const idx = bisect(d.values, xDate)
 
-    const mouseG = svg.append("g")
-      .attr("class", "mouse-over-effects")
-    
-    mouseG.append("path")
-      .attr("class", "mouse-line")
-      .style("stroke", "black")
-      .style("stroke-width", "1px")
-      .style("opacity", "0")
-    
-    const lines = document.getElementsByClassName('line')
+        let beginning: number | null = 0
+        let end = (lines[i] as SVGGeometryElement).getTotalLength()
+        let target = null
+        let pos: DOMPoint
 
-    const mousePerLine = mouseG.selectAll('.mouse-per-line')
-                                .data(circles)
-                                .enter()
-                                .append("g")
-                                .attr("class", "mouse-per-line")
+        while (true) {
+          target = Math.floor((beginning + end) / 2)
+          pos = (lines[i] as SVGGeometryElement).getPointAtLength(target)
+          if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+            break
+          }
+          if (pos.x > mouse[0]) end = target
+          else if (pos.x < mouse[0]) beginning = target
+          else break //position found
+        }
 
-    mousePerLine.append("circle")
-      .attr("r", 7)
-      .style("stroke", (d) => (colorScale(d.name)))
-      .style("fill", "none")
-      .style("stroke-width", "1px")
-      .style("opacity", "0")
-
-    mousePerLine.append("text")
-      .attr("transform", "translate(10,3)")
-
-    mouseG.append('svg:rect')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('fill', 'none')
-      .attr('pointer-events', 'all')
-      .on('mouseout', function() { // on mouse out hide line, circles and text
-        d3.select(".mouse-line")
-          .style("opacity", "0")
-        d3.selectAll(".mouse-per-line circle")
-          .style("opacity", "0")
-        d3.selectAll(".mouse-per-line text")
-          .style("opacity", "0")
+        // tooltip format
+        d3.select(this)
+          .select('text')
+          .text(`${formatDate(xDate)}, ${d.name}, ${y.invert(pos.y).toFixed(2)}`) //formatDate(xDate) + d.name + y.invert(pos.y).toFixed(2)
+        return 'translate(' + mouse[0] + ',' + pos.y + ')'
       })
-      .on('mouseover', function() { // on mouse in show line, circles and text
-        d3.select(".mouse-line")
-          .style("opacity", "1")
-        d3.selectAll(".mouse-per-line circle")
-          .style("opacity", "1")
-        d3.selectAll(".mouse-per-line text")
-          .style("opacity", "1")
-      })
-      .on('mousemove', function() { // mouse moving over canvas
-        const mouse = d3.pointer(event)
-        d3.select(".mouse-line")
-          .attr("d", function() {
-            let d = "M" + mouse[0] + "," + height
-            d += " " + mouse[0] + "," + 0
-            return d
-          })
-          d3.selectAll(".mouse-per-line")
-          .attr("transform", function(d, i) {
-            // Object.keys(d).map(key => console.log(key, d[key]))
-            // console.log(width/mouse[0])
-            const xDate = x.invert(mouse[0])
-            const bisect = d3.bisector((d) => (d.date)).right
-            const idx = bisect(d.values, xDate)
-            
-            let beginning:number|null = 0
-            let end = (lines[i] as SVGGeometryElement).getTotalLength()
-            let target = null
-            let pos:DOMPoint
-
-            while (true){
-              target = Math.floor((beginning + end) / 2)
-              pos = (lines[i] as SVGGeometryElement).getPointAtLength(target)
-              if ((target === end || target === beginning) && pos.x !== mouse[0]) {
-                  break;
-              }
-              if (pos.x > mouse[0])
-                end = target
-              else if (pos.x < mouse[0])
-                beginning = target
-              else
-                break //position found
-            }
-            
-            // tooltip format
-            d3.select(this).select('text')
-              .text(`${formatDate(xDate)}, ${d.name}, ${ y.invert(pos.y).toFixed(2)}`)//formatDate(xDate) + d.name + y.invert(pos.y).toFixed(2)
-            return "translate(" + mouse[0] + "," + pos.y +")"
-          })
-      })
+    })
 }
 </script>
