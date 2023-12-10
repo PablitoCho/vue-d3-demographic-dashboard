@@ -38,19 +38,19 @@ const barChartData: Ref<DemographicValue[]> = ref([])
 const pieChartData: Ref<DemographicValue[]> = ref([])
 
 const fetchDemographicData = () => {
-  if (selectedRegions.value) {
+  if (selectedRegions.value.length > 0) {
     getBirthRates(selectedRegions.value)
       .then((data) => (lineChartData.value = data))
       .catch((err) => console.error(err))
   }
 
-  if (selectedBarChartVariable.value) {
+  if (selectedBarChartVariable.value.length > 0) {
     getDemographicValues(selectedBarChartVariable.value)
       .then((data) => (barChartData.value = data))
       .catch((err) => console.error(err))
   }
 
-  if (selectedPieChartVariable.value) {
+  if (selectedPieChartVariable.value.length > 0) {
     getDemographicValues(selectedPieChartVariable.value)
       .then((data) => (pieChartData.value = data))
       .catch((err) => console.error(err))
