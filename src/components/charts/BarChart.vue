@@ -23,12 +23,22 @@ const padding = 1
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>
 let maxValue: number
 
+const calHeight = (d:number, maxValue:number, scaler:number=0.8):number => {
+  const ratio = height / maxValue
+  return d * ratio * scaler
+}
+
 watch(
   () => props.dataset,
   () => {
-    const barData = props.dataset!.map((o) => o.value)
-    maxValue = Math.max(...barData)
+    const barData = props.dataset!
+      .filter((data) => data.region !== 'Country')
+      .map((o) => {
+        return { region : o.region, value : o.value}
+      })
+    
     console.log('data:', barData)
+    maxValue = Math.max(...barData.map(d => d.value))
 
     // clear svg
     svg = d3.select('#bar-chart')
@@ -44,9 +54,9 @@ watch(
       .enter()
       .append('rect')
         .attr('x', (d, i) => i * (width / barData.length))
-        .attr('y', (d) => height - d)
+        .attr('y', (d) => height - calHeight(d.value, maxValue))
         .attr('width', width / barData.length - padding)
-        .attr('height', (d) => d)
+        .attr('height', (d) => calHeight(d.value, maxValue))
         .attr('fill', 'steelblue')
   }
 )
