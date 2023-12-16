@@ -16,14 +16,14 @@ const props = defineProps({
 // dimensions
 const width = 1000
 const height = 400
-const margin = { top: 10, right: 20, bottom: 30, left: 20 }
+const margin = { top: 10, right: 20, bottom: 80, left: 20 }
 const padding = 1
 
 // reusable variables
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>
 let maxValue: number
 
-const calHeight = (d:number, maxValue:number, scaler:number=0.8):number => {
+const calHeight = (d:number, maxValue:number, scaler:number=0.6):number => {
   const ratio = height / maxValue
   return d * ratio * scaler
 }
@@ -57,7 +57,37 @@ watch(
         .attr('y', (d) => height - calHeight(d.value, maxValue))
         .attr('width', width / barData.length - padding)
         .attr('height', (d) => calHeight(d.value, maxValue))
+        .attr("transform", `translate(0, ${-margin.bottom})`)
         .attr('fill', 'steelblue')
+
+    // axis
+    const x = d3.scaleBand()
+                .domain(barData.map(d => d.region))
+                .range([0, width])
+                // .padding(0.1);
+
+    const xAxis = d3.axisBottom(x).tickSizeOuter(0);
+
+    svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(xAxis)
+        .selectAll("text")
+          .attr("transform", "rotate(45)")
+          .style("text-anchor", "start")
+
+    // label
+    svg
+      .append("g")
+      .selectAll('text')
+      .data(barData)
+      .enter()
+      .append('text')
+        .attr("x", (d, i) => i * (width / barData.length) + 5)
+        .attr("y", (d) => height - calHeight(d.value, maxValue) - margin.bottom - 5)
+        .attr('fill', 'black')
+        .text((d) => d.value)
+    
   }
 )
 </script>
