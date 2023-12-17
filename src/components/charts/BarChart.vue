@@ -16,7 +16,7 @@ const props = defineProps({
 // dimensions
 const width = 1000
 const height = 400
-const margin = { top: 10, right: 20, bottom: 80, left: 20 }
+const margin = { top: 10, right: 60, bottom: 80, left: 20 }
 const padding = 1
 
 // reusable variables
