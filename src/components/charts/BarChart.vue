@@ -7,10 +7,11 @@
 <script setup lang="ts">
 import type { DemographicValue } from '@/services'
 import * as d3 from 'd3'
-import { watch, type PropType } from 'vue'
+import { watch, type PropType, computed } from 'vue'
 
 const props = defineProps({
-  dataset: Array as PropType<DemographicValue[]>
+  dataset: Array as PropType<DemographicValue[]>,
+  variable: String
 })
 
 // dimensions
@@ -27,6 +28,16 @@ const calHeight = (d:number, maxValue:number, scaler:number=0.6):number => {
   const ratio = height / maxValue
   return d * ratio * scaler
 }
+
+const title = computed(() => {
+  if(props.variable) {
+    if(props.variable === "Birth") return "출생아수"
+    if(props.variable === "Death") return "사망자수"
+    if(props.variable === "Marriage") return "혼인건수"
+    if(props.variable === "Divorce") return "이혼건수"
+  }
+  return ""
+})
 
 watch(
   () => props.dataset,
@@ -75,6 +86,15 @@ watch(
         .selectAll("text")
           .attr("transform", "rotate(45)")
           .style("text-anchor", "start")
+    
+    // title
+    svg
+      .append("text")
+        .attr("x", (width / 2))
+        .attr("y", margin.top * 2)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "18px") 
+        .text(title.value)
 
     // label
     svg

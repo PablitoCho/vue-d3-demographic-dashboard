@@ -9,8 +9,8 @@
     <LineChart :dataset="lineChartData" />
     <div class="container-fluid">
       <div class="row">
-        <BarChart :dataset="barChartData" />
-        <PieChart :dataset="pieChartData" />
+        <BarChart :dataset="barChartData" :variable="selectedBarChartVariable"/>
+        <PieChart :dataset="pieChartData" :variable="selectedPieChartVariable"/>
       </div>
     </div>
   </main>
