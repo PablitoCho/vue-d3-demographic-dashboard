@@ -24,32 +24,32 @@ const padding = 1
 let svg: d3.Selection<SVGElement, {}, HTMLElement, any>
 let maxValue: number
 
-const calHeight = (d:number, maxValue:number, scaler:number=0.6):number => {
+const calHeight = (d: number, maxValue: number, scaler: number = 0.6): number => {
   const ratio = height / maxValue
   return d * ratio * scaler
 }
 
 const title = computed(() => {
-  if(props.variable) {
-    if(props.variable === "Birth") return "출생아수"
-    if(props.variable === "Death") return "사망자수"
-    if(props.variable === "Marriage") return "혼인건수"
-    if(props.variable === "Divorce") return "이혼건수"
+  if (props.variable) {
+    if (props.variable === 'Birth') return '출생아수'
+    if (props.variable === 'Death') return '사망자수'
+    if (props.variable === 'Marriage') return '혼인건수'
+    if (props.variable === 'Divorce') return '이혼건수'
   }
-  return ""
+  return ''
 })
 
 watch(
   () => props.dataset,
   () => {
-    const barData = props.dataset!
-      .filter((data) => data.region !== 'Country')
+    const barData = props
+      .dataset!.filter((data) => data.region !== 'Country')
       .map((o) => {
-        return { region : o.region, value : o.value}
+        return { region: o.region, value: o.value }
       })
-    
+
     console.log('data:', barData)
-    maxValue = Math.max(...barData.map(d => d.value))
+    maxValue = Math.max(...barData.map((d) => d.value))
 
     // clear svg
     svg = d3.select('#bar-chart')
@@ -64,50 +64,51 @@ watch(
       .data(barData)
       .enter()
       .append('rect')
-        .attr('x', (d, i) => i * (width / barData.length))
-        .attr('y', (d) => height - calHeight(d.value, maxValue))
-        .attr('width', width / barData.length - padding)
-        .attr('height', (d) => calHeight(d.value, maxValue))
-        .attr("transform", `translate(0, ${-margin.bottom})`)
-        .attr('fill', 'steelblue')
+      .attr('x', (d, i) => i * (width / barData.length))
+      .attr('y', (d) => height - calHeight(d.value, maxValue))
+      .attr('width', width / barData.length - padding)
+      .attr('height', (d) => calHeight(d.value, maxValue))
+      .attr('transform', `translate(0, ${-margin.bottom})`)
+      .attr('fill', 'steelblue')
 
     // axis
-    const x = d3.scaleBand()
-                .domain(barData.map(d => d.region))
-                .range([0, width])
-                // .padding(0.1);
+    const x = d3
+      .scaleBand()
+      .domain(barData.map((d) => d.region))
+      .range([0, width])
+    // .padding(0.1);
 
-    const xAxis = d3.axisBottom(x).tickSizeOuter(0);
+    const xAxis = d3.axisBottom(x).tickSizeOuter(0)
 
-    svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(xAxis)
-        .selectAll("text")
-          .attr("transform", "rotate(45)")
-          .style("text-anchor", "start")
-    
+    svg
+      .append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(xAxis)
+      .selectAll('text')
+      .attr('transform', 'rotate(45)')
+      .style('text-anchor', 'start')
+
     // title
     svg
-      .append("text")
-        .attr("x", (width / 2))
-        .attr("y", margin.top * 2)
-        .attr("text-anchor", "middle")  
-        .style("font-size", "18px") 
-        .text(title.value)
+      .append('text')
+      .attr('x', width / 2)
+      .attr('y', margin.top * 2)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '18px')
+      .text(title.value)
 
     // label
     svg
-      .append("g")
+      .append('g')
       .selectAll('text')
       .data(barData)
       .enter()
       .append('text')
-        .attr("x", (d, i) => i * (width / barData.length) + 5)
-        .attr("y", (d) => height - calHeight(d.value, maxValue) - margin.bottom - 5)
-        .attr('fill', 'black')
-        .text((d) => d.value)
-    
+      .attr('x', (d, i) => i * (width / barData.length) + 5)
+      .attr('y', (d) => height - calHeight(d.value, maxValue) - margin.bottom - 5)
+      .attr('fill', 'black')
+      .text((d) => d.value)
   }
 )
 </script>
