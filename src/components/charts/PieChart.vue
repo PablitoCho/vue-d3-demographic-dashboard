@@ -14,14 +14,20 @@ const props = defineProps({
   variable: String
 })
 
+let colorScale: d3.ScaleOrdinal<string, string, never>
 let svg: d3.Selection<d3.BaseType, unknown, HTMLElement, any>
 
 // dimensions
 const width = 400
 const height = 400
+const margin = { top: 10, right: 10, bottom: 10, left: 20 }
 
-const outerRadius = width / 2
+const outerRadius = width / 3
 const innerRadius = 0
+
+const arc = d3.arc()
+              .innerRadius(innerRadius)
+              .outerRadius(outerRadius)
 
 const title = computed(() => {
   if (props.variable) {
@@ -36,7 +42,33 @@ const title = computed(() => {
 watch(
   () => props.dataset,
   () => {
-    // draw chart
+
+    const chartData = props.dataset!
+                        .filter((data) => data.region !== 'Country')
+                        .map((o) => ({ region: o.region, value: o.value }))
+
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+                    .domain(chartData!.map((d) => d.region))
+    // reset svg
+    svg = d3.select('#pie-chart')
+              .attr("height", height)
+              .attr("width", width)
+              .attr("viewBox", [-(width/2+margin.left), -height/2, width, height - margin.top])
+    
+    svg.selectAll('*').remove()
+
+    const pie = d3.pie()
+
+    const arcs = svg.append("g")
+                  .selectAll('arc')
+                  .data(pie(chartData.map(o => o.value)))
+                  .enter()
+                    .append('g')
+                    .attr('class', 'arc')
+
+    arcs.append('path')
+      .attr('fill', (d,i) => colorScale(chartData[i].region))
+      .attr('d', arc)
 
   }
 )

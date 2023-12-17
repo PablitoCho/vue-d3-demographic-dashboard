@@ -44,9 +44,7 @@ watch(
   () => {
     const barData = props
       .dataset!.filter((data) => data.region !== 'Country')
-      .map((o) => {
-        return { region: o.region, value: o.value }
-      })
+      .map((o) => ({ region: o.region, value: o.value }))
 
     console.log('data:', barData)
     maxValue = Math.max(...barData.map((d) => d.value))
