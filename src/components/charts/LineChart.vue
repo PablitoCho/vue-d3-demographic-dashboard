@@ -226,7 +226,7 @@ const addMouseEvent = () => {
       d3.selectAll('.mouse-per-line circle').style('opacity', '1')
       d3.selectAll('.mouse-per-line text').style('opacity', '1')
     })
-    .on('mousemove', function () {
+    .on('mousemove', function (event) {
       // mouse moving over canvas
       const mouse = d3.pointer(event)
       d3.select('.mouse-line').attr('d', function () {

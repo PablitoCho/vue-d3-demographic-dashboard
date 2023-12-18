@@ -38,25 +38,25 @@ const title = computed(() => {
 })
 
 const korRegions: { [key: string]: string } = {
-  'Busan': '부산',
+  Busan: '부산',
   'Chungcheongbuk-do': '충북',
   'Chungcheongnam-do': '충남',
-  'Daegu': '대구',
-  'Daejeon': '대전',
+  Daegu: '대구',
+  Daejeon: '대전',
   'Gangwon-do': '강원',
-  'Gwangju': '광주',
+  Gwangju: '광주',
   'Gyeonggi-do': '경기',
   'Gyeongsangbuk-do': '경북',
   'Gyeongsangnam-do': '경남',
-  'Incheon': '인천',
-  'Jeju': '제주',
+  Incheon: '인천',
+  Jeju: '제주',
   'Jeollabuk-do': '전북',
   'Jeollanam-do': '전남',
-  'Sejong': '세종',
-  'Seoul': '서울',
-  'Ulsan': '울산',
-  'Country': '전국',
-  'Etc': '기타'
+  Sejong: '세종',
+  Seoul: '서울',
+  Ulsan: '울산',
+  Country: '전국',
+  Etc: '기타'
 }
 
 watch(
@@ -79,7 +79,9 @@ watch(
     console.log('chartData :', chartData)
 
     const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(chartData!.map((d) => d.region))
-    // reset svg
+    // reset
+    d3.select('.tooltip').remove()
+
     svg = d3
       .select('#pie-chart')
       .attr('height', height)
@@ -107,15 +109,46 @@ watch(
     arcs
       .append('text')
       // .attr('transform', (d) => `translate(${arc.centroid(d)})`)
-      .attr("transform", d => {
+      .attr('transform', (d) => {
         const _d = arc.centroid(d)
         _d[0] *= 1.5
         _d[1] *= 1.5
         return `translate(${_d})`
       })
-      .attr("text-anchor", "middle")
+      .attr('text-anchor', 'middle')
       .text((d, i) => korRegions[chartData[i].region])
       .attr('fill', 'white')
+
+    // tooltip
+    const div = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0)
+
+    const addTooltip = (event: MouseEvent, d: d3.PieArcDatum<number | { valueOf(): number }>) => {
+      div.style('opacity', 1)
+      div
+        .html(`${d.data}`)
+        .style('left', event.pageX + 'px')
+        .style('top', event.pageY + 'px')
+    }
+
+    arcs
+      .on('mouseover', addTooltip)
+      .on('mousemove', addTooltip)
+      .on('mouseout', () => div.style('opacity', 0))
   }
 )
 </script>
+
+<style>
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 120px;
+  height: 20px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: white;
+  border: 1px solid;
+  border-radius: 3px;
+  pointer-events: none;
+}
+</style>
