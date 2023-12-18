@@ -106,9 +106,14 @@ watch(
     // Labels
     arcs
       .append('text')
-      // https://www.geeksforgeeks.org/d3-js-arc-centroid-function/
-      // compute the midpoint of the centerline of the arc
-      .attr('transform', (d) => `translate(${arc.centroid(d)})`)
+      // .attr('transform', (d) => `translate(${arc.centroid(d)})`)
+      .attr("transform", d => {
+        const _d = arc.centroid(d)
+        _d[0] *= 1.5
+        _d[1] *= 1.5
+        return `translate(${_d})`
+      })
+      .attr("text-anchor", "middle")
       .text((d, i) => korRegions[chartData[i].region])
       .attr('fill', 'white')
   }
