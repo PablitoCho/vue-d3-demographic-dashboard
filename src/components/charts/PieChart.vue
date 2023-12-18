@@ -23,19 +23,11 @@ const height = 400
 const margin = { top: 10, right: 10, bottom: 10, left: 20 }
 
 const outerRadius = width / 3
-const innerRadius = 0
+const innerRadius = width / 6
 
-const arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius)
-
-const title = computed(() => {
-  if (props.variable) {
-    if (props.variable === 'Birth') return '출생아수'
-    if (props.variable === 'Death') return '사망자수'
-    if (props.variable === 'Marriage') return '혼인건수'
-    if (props.variable === 'Divorce') return '이혼건수'
-  }
-  return ''
-})
+const arc = d3.arc()
+              .innerRadius(innerRadius)
+              .outerRadius(outerRadius)
 
 const korRegions: { [key: string]: string } = {
   Busan: '부산',
@@ -59,6 +51,16 @@ const korRegions: { [key: string]: string } = {
   Etc: '기타'
 }
 
+const title = computed(() => {
+  if (props.variable) {
+    if (props.variable === 'Birth') return '출생아수'
+    if (props.variable === 'Death') return '사망자수'
+    if (props.variable === 'Marriage') return '혼인건수'
+    if (props.variable === 'Divorce') return '이혼건수'
+  }
+  return ''
+})
+
 watch(
   () => props.dataset,
   () => {
@@ -67,6 +69,7 @@ watch(
       .map((o) => ({ region: o.region, value: o.value }))
       .sort((a, b) => b.value - a.value)
 
+    const country = props.dataset!.find((d) => d.region === 'Country')?.value
     const chartData = chartDataAll.slice(0, 5)
 
     const sumRest = chartDataAll
@@ -105,19 +108,44 @@ watch(
       .attr('fill', (d, i) => colorScale(chartData[i].region))
       .attr('d', arc)
 
+    // title
+    svg
+      .append('text')
+      .attr("x", -(margin.left / 2))
+      .attr("y", -(height / 2) + margin.top)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '18px')
+      .text(title.value)
+
     // Labels
     arcs
       .append('text')
-      // .attr('transform', (d) => `translate(${arc.centroid(d)})`)
-      .attr('transform', (d) => {
-        const _d = arc.centroid(d)
-        _d[0] *= 1.5
-        _d[1] *= 1.5
-        return `translate(${_d})`
-      })
+      .attr('transform', (d) => `translate(${arc.centroid(d)})`)
+      // .attr('transform', (d) => {
+      //   const _d = arc.centroid(d)
+      //   _d[0] *= 1.5
+      //   _d[1] *= 1.5
+      //   return `translate(${_d})`
+      // })
       .attr('text-anchor', 'middle')
       .text((d, i) => korRegions[chartData[i].region])
       .attr('fill', 'white')
+
+    svg.append("text")
+      .attr("id","title")
+      .attr("x", -(margin.left / 2))
+      .attr("y", -(margin.top / 2))
+      .attr("text-anchor", "middle")  
+      .style("font-size", "16px")
+      .append('svg:tspan')
+        .attr('x', 0)
+        .attr('dy', 0)
+        .text(`${title.value}`)
+      .append('svg:tspan')
+        .attr('x', 0)
+        .attr('dy', 20)
+        .text(`전국:${country}`)
+      // .text(`${title.value}\n전국:${120}`)
 
     // tooltip
     const div = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0)
