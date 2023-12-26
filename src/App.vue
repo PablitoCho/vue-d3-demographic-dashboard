@@ -1,6 +1,7 @@
 <template>
   <main>
-    <SearchBar
+    <SampleBarChart />
+    <!-- <SearchBar
       @search-data="fetchDemographicData"
       @check-regions="(region, checked) => updateRegions(region, checked)"
       @select-bar-chart-variable="(variable) => (selectedBarChartVariable = variable)"
@@ -12,7 +13,7 @@
         <BarChart :dataset="barChartData" :variable="selectedBarChartVariable" />
         <PieChart :dataset="pieChartData" :variable="selectedPieChartVariable" />
       </div>
-    </div>
+    </div> -->
   </main>
 </template>
 
@@ -21,6 +22,8 @@ import SearchBar from '@/components/SearchBar.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
+import SampleBarChart from './components/charts/SampleBarChart.vue'
+
 import {
   getBirthRates,
   getDemographicValues,
