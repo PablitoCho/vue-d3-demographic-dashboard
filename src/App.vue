@@ -22,7 +22,7 @@ import SearchBar from '@/components/SearchBar.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import PieChart from '@/components/charts/PieChart.vue'
-import SampleBarChart from './components/charts/SampleBarChart.vue'
+import SampleBarChart from '@/components/charts/SampleBarChart.vue'
 
 import {
   getBirthRates,
